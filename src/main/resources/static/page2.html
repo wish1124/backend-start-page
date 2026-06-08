@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>회의실 예약 현황</title>
+    <style>
+      body {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 0 20px 48px;
+        font-family: sans-serif;
+        line-height: 1.6;
+        background-color: #f5f5f5;
+      }
+      h1 { margin-bottom: 4px; }
+      p.subtitle { color: #666; margin-top: 0; }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      }
+      th {
+        background-color: #2d6a4f;
+        color: white;
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 14px;
+      }
+      td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
+      }
+      tr:last-child td { border-bottom: none; }
+      tr:hover td { background-color: #f9f9f9; }
+
+      .badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        background-color: #d8f3dc;
+        color: #1b4332;
+      }
+      #status { color: #888; margin: 20px 0; }
+    </style>
+  </head>
+  <body>
+    <h1>회의실 예약 현황 <small style="font-size:14px;color:#888">(CSR)</small></h1>
+    <p id="status" class="subtitle">불러오는 중...</p>
+
+    <table id="table" style="display:none">
+      <thead>
+        <tr>
+          <th>회의 제목</th>
+          <th>회의실</th>
+          <th>위치</th>
+          <th>주최자</th>
+          <th>부서</th>
+          <th>시작</th>
+          <th>종료</th>
+          <th>인원</th>
+          <th>상태</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+
+    <script>
+      function fmt(dt) {
+        const d = new Date(dt);
+        return d.toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })
+          + ' ' + d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false });
+      }
+
+      fetch('/api/reservations')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('status').textContent = `총 ${data.length}건의 예약`;
+          const tbody = document.getElementById('tbody');
+          data.forEach(r => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td><strong>${r.title}</strong></td>
+              <td>${r.room}</td>
+              <td>${r.location}</td>
+              <td>${r.host}</td>
+              <td>${r.department}</td>
+              <td>${fmt(r.startTime)}</td>
+              <td>${fmt(r.endTime)}</td>
+              <td>${r.attendees}명</td>
+              <td><span class="badge">${r.status}</span></td>
+            `;
+            tbody.appendChild(tr);
+          });
+          document.getElementById('table').style.display = 'table';
+        })
+        .catch(() => {
+          document.getElementById('status').textContent = '데이터를 불러오지 못했습니다.';
+        });
+    </script>
+  </body>
+</html>
