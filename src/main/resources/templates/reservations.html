@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -47,15 +47,13 @@
         background-color: #d8f3dc;
         color: #1b4332;
       }
-      #status { color: #888; margin: 20px 0; }
     </style>
   </head>
   <body>
     <h1>회의실 예약 현황</h1>
-    <p class="subtitle">실시간 예약 데이터를 불러옵니다.</p>
-    <p id="status">불러오는 중...</p>
+    <p class="subtitle">총 <strong th:text="${reservations.size()}">0</strong>건의 예약</p>
 
-    <table id="table" style="display:none">
+    <table>
       <thead>
         <tr>
           <th>회의 제목</th>
@@ -69,41 +67,19 @@
           <th>상태</th>
         </tr>
       </thead>
-      <tbody id="tbody"></tbody>
+      <tbody>
+        <tr th:each="r : ${reservations}">
+          <td><strong th:text="${r.title}"></strong></td>
+          <td th:text="${r.room}"></td>
+          <td th:text="${r.location}"></td>
+          <td th:text="${r.host}"></td>
+          <td th:text="${r.department}"></td>
+          <td th:text="${#temporals.format(r.startTime, 'MM-dd HH:mm')}"></td>
+          <td th:text="${#temporals.format(r.endTime, 'HH:mm')}"></td>
+          <td th:text="${r.attendees} + '명'"></td>
+          <td><span class="badge" th:text="${r.status}"></span></td>
+        </tr>
+      </tbody>
     </table>
-
-    <script>
-      function fmt(dt) {
-        const d = new Date(dt);
-        return d.toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })
-          + ' ' + d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false });
-      }
-
-      fetch('/api/reservations')
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById('status').textContent = `총 ${data.length}건의 예약`;
-          const tbody = document.getElementById('tbody');
-          data.forEach(r => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td><strong>${r.title}</strong></td>
-              <td>${r.room}</td>
-              <td>${r.location}</td>
-              <td>${r.host}</td>
-              <td>${r.department}</td>
-              <td>${fmt(r.startTime)}</td>
-              <td>${fmt(r.endTime)}</td>
-              <td>${r.attendees}명</td>
-              <td><span class="badge">${r.status}</span></td>
-            `;
-            tbody.appendChild(tr);
-          });
-          document.getElementById('table').style.display = 'table';
-        })
-        .catch(() => {
-          document.getElementById('status').textContent = '데이터를 불러오지 못했습니다.';
-        });
-    </script>
   </body>
 </html>
