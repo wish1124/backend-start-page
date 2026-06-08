@@ -3,134 +3,107 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>개발 도서 대여 신청서</title>
-  </head>
-  <body>
+    <title>회의실 예약 현황</title>
     <style>
       body {
-        max-width: 760px;
+        max-width: 900px;
         margin: 40px auto;
         padding: 0 20px 48px;
         font-family: sans-serif;
         line-height: 1.6;
-        background-color: green; /* 배경색을 yellow에서 green으로 수정 */
+        background-color: #f5f5f5;
       }
+      h1 { margin-bottom: 4px; }
+      p.subtitle { color: #666; margin-top: 0; }
 
-      main {
-        padding: 8px 0;
-      }
-
-      section {
-        padding: 20px;
-        margin-bottom: 24px;
-        border: 1px solid #d8c8ad;
-        border-radius: 12px;
-        background-color: rgba(255, 255, 255, 0.9); /* 녹색 배경에서 글씨가 잘 보이도록 섹션 배경색 추가 */
-      }
-
-      h1,
-      h2,
-      h3 {
-        margin-top: 0;
-      }
-
-      a {
-        color: #8a4b18;
-        font-weight: bold;
-      }
-
-      label {
-        display: block;
-        margin-top: 12px;
-        font-weight: bold;
-      }
-
-      input,
-      button {
-        display: block;
+      table {
         width: 100%;
-        box-sizing: border-box;
-        margin: 8px 0 16px;
-        padding: 8px;
-        border: 1px solid #c7b28f;
-        border-radius: 8px;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.1);
       }
-
-      button {
-        background-color: #8a4b18;
+      th {
+        background-color: #2d6a4f;
         color: white;
-        font-weight: bold;
-        cursor: pointer;
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 14px;
       }
+      td {
+        padding: 12px 16px;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
+      }
+      tr:last-child td { border-bottom: none; }
+      tr:hover td { background-color: #f9f9f9; }
+
+      .badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        background-color: #d8f3dc;
+        color: #1b4332;
+      }
+      #status { color: #888; margin: 20px 0; }
     </style>
+  </head>
+  <body>
+    <h1>회의실 예약 현황</h1>
+    <p class="subtitle">실시간 예약 데이터를 불러옵니다.</p>
+    <p id="status">불러오는 중...</p>
 
-    <header>
-      <h1>개발 도서 대여 신청서</h1> <!-- h2에서 h1으로 수정 -->
-      <p>읽고 싶은 개발 도서를 대여하기 위해 작성하는 페이지입니다.</p> <!-- 반납 -> 대여 수정 -->
-    </header>
-
-    <main>
-      <section>
-        <h2>신청 안내</h2>
-        <p>도서 제목과 이름을 입력하면 담당자가 확인합니다.</p>
-      </section>
-
-      <section>
-        <h2>참고 링크</h2>
-        <ul>
-          <li><a href="https://developer.mozilla.org/ko/">MDN Web Docs</a></li> <!-- herf -> href 수정 -->
-          <li><a href="https://github.com/">GitHub</a></li>
-        </ul>
-      </section>
-
-      <section>
-        <h2>신청 메모</h2>
-        <div>
-          <h3>읽고 싶은 이유</h3> <!-- h4에서 h3으로 수정 -->
-          <p>서버와 데이터가 어떻게 연결되는지 알고 싶습니다.</p>
-        </div>
-      </section>
-
-      <section>
-        <h2>도서 대여 폼</h2>
-        <p>이름과 읽고 싶은 도서 제목을 입력합니다.</p>
-
-        <form onsubmit="sendBookRequest(event)">
-          <label for="student-name">이름</label>
-          <input id="student-name" name="student-name" type="text" placeholder="이름" /> <!-- placehoder -> placeholder 수정 -->
-
-          <label for="book-title">도서 제목</label>
-          <input id="book-title" name="book-title" type="text" placeholder="읽고 싶은 도서 제목" />
-
-          <button type="submit">대여 신청하기</button> <!-- </buton> -> </button> 수정 -->
-        </form>
-
-        <p id="request-result">신청 결과: 아직 요청된 도서가 없습니다.</p>
-      </section>
-    </main>
+    <table id="table" style="display:none">
+      <thead>
+        <tr>
+          <th>회의 제목</th>
+          <th>회의실</th>
+          <th>위치</th>
+          <th>주최자</th>
+          <th>부서</th>
+          <th>시작</th>
+          <th>종료</th>
+          <th>인원</th>
+          <th>상태</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
 
     <script>
-      function sendBookRequest(event) {
-        event.preventDefault();
-
-        const studentName = document.getElementById("student-name").value;
-        const bookTitle = document.getElementById("book-title").value;
-
-        if (studentName === "" || bookTitle === "") {
-          alert("이름과 도서 제목을 모두 입력해 주세요.");
-          return;
-        }
-
-        // 반납 -> 대여 문구로 수정
-        const agreed = confirm(studentName + " 님의 도서 대여 신청을 보낼까요?");
-
-        if (agreed) {
-          // 반납하고 싶어 합니다 -> 대여하고 싶어 합니다 수정
-          document.getElementById("request-result").textContent =
-            "신청 결과: " + studentName + " 님은 '" + bookTitle + "' 도서를 대여하고 싶어 합니다.";
-          alert("도서 대여 신청 흐름을 확인했습니다.");
-        }
+      function fmt(dt) {
+        const d = new Date(dt);
+        return d.toLocaleDateString('ko-KR', { month: '2-digit', day: '2-digit' })
+          + ' ' + d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false });
       }
+
+      fetch('/api/reservations')
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('status').textContent = `총 ${data.length}건의 예약`;
+          const tbody = document.getElementById('tbody');
+          data.forEach(r => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td><strong>${r.title}</strong></td>
+              <td>${r.room}</td>
+              <td>${r.location}</td>
+              <td>${r.host}</td>
+              <td>${r.department}</td>
+              <td>${fmt(r.startTime)}</td>
+              <td>${fmt(r.endTime)}</td>
+              <td>${r.attendees}명</td>
+              <td><span class="badge">${r.status}</span></td>
+            `;
+            tbody.appendChild(tr);
+          });
+          document.getElementById('table').style.display = 'table';
+        })
+        .catch(() => {
+          document.getElementById('status').textContent = '데이터를 불러오지 못했습니다.';
+        });
     </script>
   </body>
 </html>

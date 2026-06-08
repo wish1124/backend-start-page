@@ -32,7 +32,8 @@ public class ApiInfoController {
 
         Map<String, String> endpoints = new LinkedHashMap<>();
         endpoints.put("GET /", "API 정보");
-        endpoints.put("GET /page", "도서 대여 신청 페이지");
+        endpoints.put("GET /api/reservations", "회의실 예약 목록 (JSON)");
+        endpoints.put("GET /page", "회의실 예약 현황 페이지 (HTML)");
         endpoints.put("GET /actuator/health", "헬스 체크");
         info.put("endpoints", endpoints);
 
